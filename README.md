@@ -141,8 +141,8 @@ these commands for PowerShell if you want.
 #### Clone this repo anywhere you want and move into the directory:
 
 ```sh
-git clone https://github.com/nickjj/docker-django-example hellodjango
-cd hellodjango
+git clone https://github.com/nickjj/docker-django-example track
+cd track
 
 # Optionally checkout a specific tag, such as: git checkout 0.11.0
 ```
@@ -271,9 +271,9 @@ able to run `run` instead of `./run`.*
 
 ## Running a script to automate renaming the project
 
-The app is named `hello` right now but chances are your app will be a different
+The app is named `track` right now but chances are your app will be a different
 name. Since the app is already created we'll need to do a find / replace on a
-few variants of the string "hello" and update a few Docker related resources.
+few variants of the string "track" and update a few Docker related resources.
 
 And by we I mean I created a zero dependency shell script that does all of the
 heavy lifting for you. All you have to do is run the script below.

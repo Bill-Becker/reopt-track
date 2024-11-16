@@ -1,5 +1,5 @@
 {
-  "name": "hello",
+  "name": "track",
   "private": true,
   "dependencies": {
     "autoprefixer": "10.4.20",
