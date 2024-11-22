@@ -13,6 +13,8 @@ Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Made initial commit for app name change to track
+
 #### Languages and services
 
 - Update `Python` to `3.13.0`
