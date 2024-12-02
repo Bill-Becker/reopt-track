@@ -4,5 +4,6 @@ from reopt import views
 
 urlpatterns = [
     path("", views.getData, name="get"),
-    path("post/", views.postRun, name="post")
+    path("post/", views.postRun, name="post"),
+    path("update/", views.updateRun, name="update"),
 ]
