@@ -9,7 +9,7 @@ on:
       - "main"
       - "master"
   schedule:
-    - cron: "30 12 * * *"
+    - cron: "30 12 * * 1"
 
 jobs:
   test:
