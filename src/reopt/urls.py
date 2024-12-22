@@ -3,7 +3,9 @@ from django.urls import path
 from reopt import views
 
 urlpatterns = [
-    path("", views.getData, name="get"),
-    path("post/", views.postRun, name="post"),
-    path("update/", views.updateRun, name="update"),
+    path("", views.dashboard, name="reopt_dashboard"),
+    path("get/", views.getData, name="reopt_get"),
+    path("post/", views.postRun, name="reopt_post"),
+    path("update/", views.updateRun, name="reopt_update"),
+    
 ]

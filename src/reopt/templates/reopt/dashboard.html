@@ -1,0 +1,77 @@
+{% extends "layouts/index.html" %}
+{% load static %}
+
+{% block body %}
+<div class="dashboard-title">
+    <h1>REopt Usage Dashboard</h1>
+</div>
+
+
+<div class="chart-container" style="width: 100%; height: 50vh; margin: 0 auto;">
+    <canvas id="myChart" width="2400" height="1200"></canvas>
+</div>
+
+<!-- Use the json_script filter to pass the data -->
+<script id="chart-data" type="application/json">
+    {{ chart_data|safe }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Retrieve the JSON data
+    var chartDataElement = document.getElementById('chart-data');
+    console.log(chartDataElement.textContent);
+    var chartData = JSON.parse(chartDataElement.textContent);
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Cumulative Users Signed Up',
+                data: chartData.data,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                },
+                x: {
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }                
+            }
+        }
+    });
+</script>
+
+<style>
+    .dashboard-title {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .dashboard-title h1 {
+        font-size: 3em;
+        color: #4CAF50;
+    }
+
+    .chart-container {
+        text-align: center;
+        margin-top: 100px;
+    }
+
+    .chart-container canvas {
+        max-width: 100%;
+        height: auto;
+    }    
+</style>
+
+{% endblock %}
