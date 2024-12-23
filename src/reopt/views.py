@@ -159,8 +159,8 @@ def get_api_gov_data(*, api_or_jl, users_or_runs, start_date, end_date=datetime.
 
     # Expects these ENV variables to be set
     headers = {
-        "X-Admin-Auth-Token": os.getenv('ADMIN_AUTH_TOKEN'),
-        "X-Api-Key": os.getenv('API_KEY')
+        "X-Admin-Auth-Token": os.environ.get('ADMIN_AUTH_TOKEN'),
+        "X-Api-Key": os.environ.get('API_KEY')
     }
 
     # Note: the base URL already contains a "?" character and if applicable, the prefix, so we need and "&" character for the first parameter "query" here
