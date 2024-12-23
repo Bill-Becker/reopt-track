@@ -62,35 +62,70 @@ def updateRun(request):
     return Response(run_meta_serializer.errors, status=400)
 
 def generate_chart_data():
-    # Construct the file path within the reopt app's data directory
-    file_path = os.path.join(settings.BASE_DIR, 'reopt', 'data', 'api_users_thru_FY24.json')
-    
-    # Read in run data through FY24 from saved API response
-    with open(file_path, 'r') as file:
-        previous_users = json.load(file)
+    # API users up through FY24, stored in a file
+    api_users_file_path = os.path.join(settings.BASE_DIR, 'reopt', 'data', 'api_users_thru_FY24.json')
+    with open(api_users_file_path, 'r') as file:
+        older_api_users = json.load(file)
+    older_api_users_df = pd.DataFrame(older_api_users["data"])
 
-    previous_users_df = pd.DataFrame(previous_users["data"])
+    # Call api.data.gov API for latest API users FY25 through today
+    api_users_api_response = get_api_gov_data(api_or_jl="api", users_or_runs="users", start_date="2024-10-01", end_date=datetime.today().strftime('%Y-%m-%d'), interval="month")
+    latest_users_df = pd.DataFrame(api_users_api_response["data"])
 
-    # Call api.data.gov API for latest users which were not stored in the local file (up through 2024-09-30)
-    users_api_response = get_api_gov_data(api_or_jl="api", users_or_runs="users", start_date="2024-10-01", end_date=datetime.today().strftime('%Y-%m-%d'), interval="month")
-    latest_users_df = pd.DataFrame(users_api_response["data"])
+    # Append both sets of API users to get full list of users from beginning through today
+    api_users = pd.concat([older_api_users_df, latest_users_df], ignore_index=True)
 
-    # Append latest_users to previous_users_df to get full history of users up to latest
-    users = pd.concat([previous_users_df, latest_users_df], ignore_index=True)
-
-    # Cumulative users signed up
-    # Convert the "created_at" column to datetime
-    users['created_at'] = pd.to_datetime(users['created_at'])
-    users = users[users['created_at'] > '2017-01-01']
+    # Convert the "created_at" column to datetime and filter to just users who signed up from 2017 through today
+    api_users['created_at'] = pd.to_datetime(api_users['created_at'])
+    api_users = api_users[api_users['created_at'] > '2017-01-01']
 
     # Group data by quarters and calculate cumulative users
-    users.set_index('created_at', inplace=True)
-    quarterly_users = users.resample('QE').size().cumsum()
+    api_users.set_index('created_at', inplace=True)
+    api_users_quarterly = api_users.resample('QE').size().cumsum()
+
+    # Call api.data.gov API for REopt.jl user data
+    reoptjl_users_api_response = get_api_gov_data(api_or_jl="jl", users_or_runs="users", start_date="2022-10-01", end_date=datetime.today().strftime('%Y-%m-%d'), interval="month")
+    reoptjl_users = pd.DataFrame(reoptjl_users_api_response["data"])
+    # Convert the "Signed Up (UTC)" column to datetime
+    reoptjl_users['created_at'] = pd.to_datetime(reoptjl_users['created_at'])
+
+    # Filter users who signed up from 2017 through 2024
+    reoptjl_users = reoptjl_users[reoptjl_users['created_at'] >= '2017-01-01']
+    # Cumulate reoptjl_users with created_at before 2022-10-01 into Q1 2022
+    reoptjl_users_before_fy23 = reoptjl_users[reoptjl_users['created_at'] < '2022-10-01']
+    reoptjl_users_before_fy23_count = len(reoptjl_users_before_fy23)
+    
+    # TODO make these NREL's fiscal year quarters instead of calendar year quarters
+    
+    # Group data by quarters and calculate cumulative users
+    reoptjl_users.set_index('created_at', inplace=True)
+    reoptjl_users_quarterly = reoptjl_users.resample('QE').size().cumsum()
+    reoptjl_users_quarterly.loc[reoptjl_users_quarterly.index < '2022-09-30'] = 0
+    reoptjl_users_quarterly.loc['2022-09-30'] = reoptjl_users_before_fy23_count
+
+    # Reindex reoptjl_users_quarterly to match api_users_quarterly
+    reoptjl_users_quarterly = reoptjl_users_quarterly.reindex(api_users_quarterly.index, fill_value=0)
 
     # Prepare data for Chart.js
     chart_data = {
-        'labels': [f'Q{((date.month-1)//3)+1} {date.year}' for date in quarterly_users.index],
-        'data': quarterly_users.tolist()
+        'labels': [f'Q{((date.month-1)//3)+1} {date.year}' for date in api_users_quarterly.index],  # Format as 'Q1 2022', 'Q2 2022', etc.
+        'datasets': [
+            {
+                'label': 'API Users',
+                'data': api_users_quarterly.tolist(),
+                'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+                'borderColor': 'rgba(75, 192, 192, 1)',
+                'borderWidth': 1
+            },
+            {
+                'label': 'REopt.jl Users',
+                'data': reoptjl_users_quarterly.tolist(),
+                'backgroundColor': 'rgba(153, 102, 255, 0.2)',
+                'borderColor': 'rgba(153, 102, 255, 1)',
+                'borderWidth': 1
+            }
+        ],
+        "reoptjl_users_api_response": reoptjl_users_api_response
     }
 
     return chart_data
