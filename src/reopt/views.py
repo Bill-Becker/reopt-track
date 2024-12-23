@@ -124,8 +124,7 @@ def generate_chart_data():
                 'borderColor': 'rgba(153, 102, 255, 1)',
                 'borderWidth': 1
             }
-        ],
-        "reoptjl_users_api_response": reoptjl_users_api_response
+        ]
     }
 
     return chart_data
