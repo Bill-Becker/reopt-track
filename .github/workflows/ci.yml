@@ -22,6 +22,11 @@ jobs:
         run: |
           ./run ci:install-deps
 
+      - name: Set up environment variables
+        run: |
+            echo "ADMIN_AUTH_TOKEN=${{ secrets.ADMIN_AUTH_TOKEN }}" >> $GITHUB_ENV
+            echo "API_KEY=${{ secrets.API_KEY }}" >> $GITHUB_ENV          
+
       - name: "Test"
         run: |
           # Remove volumes in CI to avoid permission errors due to UID / GID.
