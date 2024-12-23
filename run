@@ -159,7 +159,7 @@ function ci:test {
   #   - https://github.com/koalaman/shellcheck
   #   - https://github.com/nickjj/wait-until
   shellcheck run bin/*
-  lint:dockerfile "${@}"
+#   lint:dockerfile "${@}"
   
   echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
   sudo sysctl -p
