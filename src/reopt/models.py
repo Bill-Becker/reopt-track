@@ -14,6 +14,9 @@ class RunData(models.Model):
     pv_size = models.FloatField(null=True, blank=True)
     battery_size = models.FloatField(null=True, blank=True)
 
+    class Meta:
+        app_label = 'reopt'
+
 
 class RunMeta(models.Model):
 
@@ -31,6 +34,9 @@ class RunMeta(models.Model):
     status = models.CharField(max_length=200, choices=STATUS_CHOICES, null=True, blank=True)
     direct_reoptjl = models.BooleanField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = 'reopt'    
 
     def clean(self, *args, **kwargs):
         if self.webtool_uuid == "" and self.run_uuid == "":

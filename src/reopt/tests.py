@@ -1,11 +1,11 @@
 from django.test import TestCase
 from .views import generate_chart_data
 import json
-
-# from django.test import TestCase
+import unittest
 
 # Create your tests here.
 
+# @unittest.skip("Skipping GenerateChartDataTest")
 class GenerateChartDataTest(TestCase):
     def test_generate_chart_data(self):
         # Setup any necessary data for the test
