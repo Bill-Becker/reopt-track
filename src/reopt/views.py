@@ -163,6 +163,8 @@ def get_api_gov_data(*, api_or_jl, users_or_runs, start_date, end_date=datetime.
         "X-Api-Key": os.environ.get('API_KEY')
     }
 
+    print("headers = " + headers)
+
     # Note: the base URL already contains a "?" character and if applicable, the prefix, so we need and "&" character for the first parameter "query" here
     jobs_url = base_url + \
         "&query=" + query + \
