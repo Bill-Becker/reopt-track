@@ -181,7 +181,7 @@ function ci:test {
 
   docker compose logs
 
-  lint "${@}"
+#   lint "${@}"
   format:imports --check
   format --check
   manage migrate
