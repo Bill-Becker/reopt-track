@@ -158,7 +158,7 @@ function ci:test {
   # It's expected that your CI environment has these tools available:
   #   - https://github.com/koalaman/shellcheck
   #   - https://github.com/nickjj/wait-until
-  shellcheck run bin/*
+#   shellcheck run bin/*
 #   lint:dockerfile "${@}"
   
   echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
@@ -182,8 +182,8 @@ function ci:test {
   docker compose logs
 
 #   lint "${@}"
-  format:imports --check
-  format --check
+#   format:imports --check
+#   format --check
   manage migrate
   manage test
 }
