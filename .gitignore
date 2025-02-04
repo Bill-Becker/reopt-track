@@ -66,8 +66,8 @@ instance/
 .webassets-cache
 
 # Celery stuff
-celerybeat-schedule
-celerybeat.pid
+# celerybeat-schedule
+# celerybeat.pid
 
 # Sphinx documentation
 docs/_build/

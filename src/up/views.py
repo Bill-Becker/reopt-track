@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.db import connection
 from django.http import HttpResponse
-from redis import Redis
+# from redis import Redis
 
-redis = Redis.from_url(settings.REDIS_URL)
+# redis = Redis.from_url(settings.REDIS_URL)
 
 
 def index(request):
@@ -11,7 +11,7 @@ def index(request):
 
 
 def databases(request):
-    redis.ping()
+    # redis.ping()
     connection.ensure_connection()
 
     return HttpResponse("")

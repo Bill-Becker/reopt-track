@@ -11,9 +11,9 @@ x-app: &default-app
     postgres:
       condition: "service_started"
       required: false
-    redis:
-      condition: "service_started"
-      required: false
+    # redis:
+    #   condition: "service_started"
+    #   required: false
   env_file:
     - ".env"
   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
@@ -60,18 +60,18 @@ services:
     volumes:
       - "postgres:/var/lib/postgresql/data"
 
-  redis:
-    deploy:
-      resources:
-        limits:
-          cpus: "${DOCKER_REDIS_CPUS:-0}"
-          memory: "${DOCKER_REDIS_MEMORY:-0}"
-    image: "redis:7.4.1-bookworm"
-    profiles: ["redis"]
-    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
-    stop_grace_period: "3s"
-    volumes:
-      - "redis:/data"
+  # redis:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "${DOCKER_REDIS_CPUS:-0}"
+  #         memory: "${DOCKER_REDIS_MEMORY:-0}"
+  #   image: "redis:7.4.1-bookworm"
+  #   profiles: ["redis"]
+  #   restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+  #   stop_grace_period: "3s"
+  #   volumes:
+  #     - "redis:/data"
 
   web:
     <<: *default-app
@@ -90,16 +90,16 @@ services:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:7800}:${PORT:-7800}"
     profiles: ["web"]
 
-  worker:
-    <<: *default-app
-    command: celery -A config worker -l "${CELERY_LOG_LEVEL:-info}"
-    entrypoint: []
-    deploy:
-      resources:
-        limits:
-          cpus: "${DOCKER_WORKER_CPUS:-0}"
-          memory: "${DOCKER_WORKER_MEMORY:-0}"
-    profiles: ["worker"]
+  # worker:
+  #   <<: *default-app
+  #   command: celery -A config worker -l "${CELERY_LOG_LEVEL:-info}"
+  #   entrypoint: []
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "${DOCKER_WORKER_CPUS:-0}"
+  #         memory: "${DOCKER_WORKER_MEMORY:-0}"
+  #   profiles: ["worker"]
 
   js:
     <<: *default-assets
@@ -111,4 +111,4 @@ services:
 
 volumes:
   postgres: {}
-  redis: {}
+  # redis: {}
