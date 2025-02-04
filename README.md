@@ -171,7 +171,7 @@ error? Please update to at least Docker Compose v2.20.2+ or Docker Desktop
 4.22.0+.
 
 Did you receive an error about a port being in use? Chances are it's because
-something on your machine is already running on port 8000. Check out the docs
+something on your machine is already running on port 7800. Check out the docs
 in the `.env` file for the `DOCKER_WEB_PORT_FORWARD` variable to fix this.
 
 Did you receive a permission denied error? Chances are you're running native
@@ -190,7 +190,7 @@ variables to fix this.
 
 #### Check it out in a browser:
 
-Visit <http://localhost:8000> in your favorite browser.
+Visit <http://localhost:7800> in your favorite browser.
 
 #### Linting the code base:
 

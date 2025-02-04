@@ -75,6 +75,6 @@ RUN if [ "${DEBUG}" = "false" ]; then \
 
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
-EXPOSE 8000
+EXPOSE 7800
 
 CMD ["gunicorn", "-c", "python:config.gunicorn", "config.wsgi"]
