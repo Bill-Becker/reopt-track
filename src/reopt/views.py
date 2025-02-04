@@ -42,6 +42,7 @@ def getData(request):
 def postRun(request):
     # De-serialize the data from the request into python/model objects
     # The DRF Serializer validates the data before saving it to the database and handles errors
+    # ip_address = get_user_ip(request)
     run_meta_serializer = RunMetaSerializer(data=request.data)
     if run_meta_serializer.is_valid():
         run_meta_serializer.save()
@@ -60,6 +61,31 @@ def updateRun(request):
         run_meta_serializer.save()
         return Response(run_meta_serializer.data, status=200)
     return Response(run_meta_serializer.errors, status=400)
+
+# TODO get user's location from IP address contained in headers (maybe), but this may require permissions
+# Google Geolocation API (not the one below) is subscription based, but NREL might have an account?
+# def get_user_location(ip_address):
+#     api_key = "YOUR_API_KEY"  # Replace with your geolocation API key
+#     url = f"https://api.ipgeolocation.io/v1/YOUR_API_KEY?apiKey={api_key}&ip={ip_address}"
+#     response = requests.get(url)
+#     location_data = response.json()
+
+#     return location_data
+
+def get_user_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+# def get_user_location_from_request(request):
+#     ip = get_user_ip(request)
+#     location_data = get_user_location(ip)
+#     print(f"User location: {location_data['city']}, {location_data['country']}")
+#     return location_data
+
 
 def generate_chart_data():
     # API users up through FY24, stored in a file
