@@ -1,6 +1,5 @@
 from django.test import TestCase
 from reopt.views import generate_chart_data
-import json
 import unittest
 
 # Create your tests here.

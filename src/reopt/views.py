@@ -12,7 +12,6 @@ from .models import RunMeta
 from .serializer import RunMetaSerializer
 
 # Create your views here.
-# flake8: noqa
 
 
 def dashboard(request):

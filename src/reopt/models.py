@@ -1,8 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-# flake8: noqa
-
 
 class RunData(models.Model):
 
