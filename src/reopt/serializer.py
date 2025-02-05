@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import RunMeta, RunData
+
+from .models import RunData
+from .models import RunMeta
 
 
 class RunDataSerializer(serializers.ModelSerializer):
