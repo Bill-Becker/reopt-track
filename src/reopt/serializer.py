@@ -24,7 +24,7 @@ class RunMetaSerializer(serializers.ModelSerializer):
         run_data = RunData.objects.create(**run_data_data)
         run_meta = RunMeta.objects.create(run_data=run_data, **validated_data)
         return run_meta
-    
+
     def update(self, instance, validated_data):
         run_data_data = validated_data.pop("run_data", None)
 

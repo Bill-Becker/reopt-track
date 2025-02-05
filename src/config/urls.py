@@ -21,6 +21,8 @@ from django.contrib import admin
 from django.urls import include
 from django.urls import path
 
+# flake8: noqa
+
 urlpatterns = [
     path("up/", include("up.urls")),
     path("", include("pages.urls")),

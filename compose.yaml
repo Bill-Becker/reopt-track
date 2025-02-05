@@ -73,6 +73,7 @@ services:
     ports:
       - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:7800}:${PORT:-7800}"
     profiles: ["web"]
+
   js:
     <<: *default-assets
     command: "../run yarn:build:js"

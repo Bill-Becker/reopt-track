@@ -1,8 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-# import requests
 
-# TODO make sure RunMeta fields are really Meta, and RunData fields are really run data
+# flake8: noqa
+
 class RunData(models.Model):
     
     name = models.CharField(default="", max_length=200, null=True, blank=True)
