@@ -43,8 +43,6 @@ out for something else on your own.
 ### Back-end
 
 - [PostgreSQL](https://www.postgresql.org/)
-- [Redis](https://redis.io/)
-- [Celery](https://github.com/celery/celery)
 
 ### Front-end
 
@@ -102,7 +100,7 @@ not all) note worthy additions and changes.
     - Custom `502.html` and `maintenance.html` pages
     - Generate favicons using modern best practices
 - **Django defaults that are changed**:
-    - Use Redis as the default Cache back-end
+    - Use the default Cache back-end
     - Use signed cookies as the session back-end
     - `public/` is the static directory where Django will serve static files from
     - `public_collected/` is where `collectstatic` will write its files to

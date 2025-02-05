@@ -7,6 +7,8 @@ Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+- Removed celery and redis from the project
+
 ### Added
 
 - `setuptools` Python dependency since Docker recently removed this from the official Python image

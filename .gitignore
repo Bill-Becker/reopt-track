@@ -65,10 +65,6 @@ pytestdebug.log
 instance/
 .webassets-cache
 
-# Celery stuff
-# celerybeat-schedule
-# celerybeat.pid
-
 # Sphinx documentation
 docs/_build/
 doc/_build/

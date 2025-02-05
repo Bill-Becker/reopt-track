@@ -9,5 +9,4 @@ public_collected/
 .dockerignore
 .env*
 !.env.example
-# celerybeat-schedule
 docker-compose.override.yml
