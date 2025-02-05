@@ -7,5 +7,4 @@ urlpatterns = [
     path("get/", views.getData, name="reopt_get"),
     path("post/", views.postRun, name="reopt_post"),
     path("update/", views.updateRun, name="reopt_update"),
-    
 ]

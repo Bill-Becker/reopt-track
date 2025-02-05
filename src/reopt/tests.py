@@ -5,6 +5,7 @@ import unittest
 
 # Create your tests here.
 
+
 @unittest.skip("Skipping GenerateChartDataTest")
 class GenerateChartDataTest(TestCase):
     def test_generate_chart_data(self):
