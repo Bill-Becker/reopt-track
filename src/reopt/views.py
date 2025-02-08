@@ -83,10 +83,12 @@ def get_user_location(ip_address):
     location_data = response.json()
     return location_data
 
+
 def get_public_ip():
     response = requests.get("http://api.ipify.org?format=json")
     ip_data = response.json()
     return ip_data["ip"]
+
 
 def get_user_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
@@ -96,11 +98,12 @@ def get_user_ip(request):
         ip = request.META.get("REMOTE_ADDR")
 
     # If the IP is a private IP, get the public IP
-    if (ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172.16.") or 
-        ip == "127.0.0.1" or ip.startswith("172.18.")):
+    if (ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172.16.") or
+            ip == "127.0.0.1" or ip.startswith("172.18.")):
         ip = get_public_ip()
 
     return ip
+
 
 def get_user_location_from_request(request):
     ip = get_user_ip(request)
@@ -108,6 +111,8 @@ def get_user_location_from_request(request):
     print(f"User location: {location_data.get('country')}")
     return location_data
 
+
+# TODO this is just for users - create an similar function for run data
 def generate_chart_data():
     # API users up through FY24, stored in a file
     api_users_file_path = os.path.join(
