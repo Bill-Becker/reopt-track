@@ -45,7 +45,11 @@ def getData(request):
 def postRun(request):
     # De-serialize the data from the request into python/model objects
     # The DRF Serializer validates the data before saving it to the database and handles errors
-    # ip_address = get_user_ip(request)
+    user_data = get_user_location_from_request(request)
+    request.data["user_ip_address"] = user_data.get("query")
+    request.data["user_country"] = user_data.get("country")
+    request.data["user_region"] = user_data.get("regionName")
+    request.data["user_city"] = user_data.get("city")
     run_meta_serializer = RunMetaSerializer(data=request.data)
     if run_meta_serializer.is_valid():
         run_meta_serializer.save()
@@ -73,16 +77,16 @@ def updateRun(request):
     return Response(run_meta_serializer.errors, status=400)
 
 
-# TODO get user's location from IP address contained in headers (maybe), but this may require permissions
-# Google Geolocation API (not the one below) is subscription based, but NREL might have an account?
-# def get_user_location(ip_address):
-#     api_key = "YOUR_API_KEY"  # Replace with your geolocation API key
-#     url = f"https://api.ipgeolocation.io/v1/YOUR_API_KEY?apiKey={api_key}&ip={ip_address}"
-#     response = requests.get(url)
-#     location_data = response.json()
+def get_user_location(ip_address):
+    url = f"http://ip-api.com/json/{ip_address}"
+    response = requests.get(url)
+    location_data = response.json()
+    return location_data
 
-#     return location_data
-
+def get_public_ip():
+    response = requests.get("http://api.ipify.org?format=json")
+    ip_data = response.json()
+    return ip_data["ip"]
 
 def get_user_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
@@ -90,15 +94,19 @@ def get_user_ip(request):
         ip = x_forwarded_for.split(",")[0]
     else:
         ip = request.META.get("REMOTE_ADDR")
+
+    # If the IP is a private IP, get the public IP
+    if (ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172.16.") or 
+        ip == "127.0.0.1" or ip.startswith("172.18.")):
+        ip = get_public_ip()
+
     return ip
 
-
-# def get_user_location_from_request(request):
-#     ip = get_user_ip(request)
-#     location_data = get_user_location(ip)
-#     print(f"User location: {location_data['city']}, {location_data['country']}")
-#     return location_data
-
+def get_user_location_from_request(request):
+    ip = get_user_ip(request)
+    location_data = get_user_location(ip)
+    print(f"User location: {location_data.get('country')}")
+    return location_data
 
 def generate_chart_data():
     # API users up through FY24, stored in a file
