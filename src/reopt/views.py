@@ -148,7 +148,7 @@ def generate_user_chart_data():
 
     # Convert the "created_at" column to datetime and filter to just users who signed up from 2017 through today
     api_users["created_at"] = pd.to_datetime(api_users["created_at"])
-    api_users = api_users[api_users["created_at"] > "2017-01-01"]
+    api_users = api_users[api_users["created_at"] > "2017-10-01"]
 
     # Group data by quarters and calculate cumulative users
     api_users.set_index("created_at", inplace=True)
@@ -167,14 +167,12 @@ def generate_user_chart_data():
     reoptjl_users["created_at"] = pd.to_datetime(reoptjl_users["created_at"])
 
     # Filter users who signed up from 2017 through 2024
-    reoptjl_users = reoptjl_users[reoptjl_users["created_at"] >= "2017-01-01"]
+    reoptjl_users = reoptjl_users[reoptjl_users["created_at"] >= "2017-10-01"]
     # Cumulate reoptjl_users with created_at before 2022-10-01 into Q1 2022
     reoptjl_users_before_fy23 = reoptjl_users[
         reoptjl_users["created_at"] < "2022-10-01"
     ]
     reoptjl_users_before_fy23_count = len(reoptjl_users_before_fy23)
-
-    # TODO make these NREL's fiscal year quarters instead of calendar year quarters
 
     # Group data by quarters and calculate cumulative users
     reoptjl_users.set_index("created_at", inplace=True)
@@ -192,7 +190,7 @@ def generate_user_chart_data():
     # Prepare data for Chart.js
     chart_data = {
         "labels": [
-            f"Q{((date.month-1)//3)+1} {date.year}"
+            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
             for date in api_users_quarterly.index
         ],  # Format as 'Q1 2022', 'Q2 2022', etc.
         "datasets": [
@@ -257,7 +255,7 @@ def generate_run_chart_data():
 
     # Group data by quarters and calculate cumulative runs
     api_runs_quarterly = api_runs.resample("QE").sum().cumsum()
-    print("api_runs_quarterly = ", api_runs_quarterly)
+
     # Call api.data.gov API for REopt.jl run data - note we are not storing and loading REopt.jl run data locally
     reoptjl_runs_api_response = get_api_gov_data(
         api_or_jl="jl",
@@ -283,8 +281,6 @@ def generate_run_chart_data():
     # Create a pandas series with run_date_range_dt as the index and runs_arr as the data
     reoptjl_runs = pd.Series(data=runs_arr, index=run_date_range_dt)
 
-    # TODO make these NREL's fiscal year quarters instead of calendar year quarters
-
     # Group data by quarters and calculate cumulative runs
     reoptjl_runs_quarterly = reoptjl_runs.resample("QE").sum().cumsum()
 
@@ -296,7 +292,7 @@ def generate_run_chart_data():
     # Prepare data for Chart.js
     chart_data = {
         "labels": [
-            f"Q{((date.month-1)//3)+1} {date.year}"
+            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
             for date in api_runs_quarterly.index
         ],  # Format as 'Q1 2022', 'Q2 2022', etc.
         "datasets": [
