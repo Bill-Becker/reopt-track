@@ -22,8 +22,10 @@ def dashboard(request):
     print("run_chart_data = ", run_chart_data)
 
     # Pass the chart data to the template
-    context = {"user_chart_data": json.dumps(user_chart_data),
-               "run_chart_data": json.dumps(run_chart_data)}
+    context = {
+        "user_chart_data": json.dumps(user_chart_data),
+        "run_chart_data": json.dumps(run_chart_data),
+    }
 
     return render(request, "reopt/dashboard.html", context)
 
@@ -101,8 +103,13 @@ def get_user_ip(request):
         ip = request.META.get("REMOTE_ADDR")
 
     # If the IP is a private IP, get the public IP
-    if (ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172.16.") or
-            ip == "127.0.0.1" or ip.startswith("172.18.")):
+    if (
+        ip.startswith("192.168.")
+        or ip.startswith("10.")
+        or ip.startswith("172.16.")
+        or ip == "127.0.0.1"
+        or ip.startswith("172.18.")
+    ):
         ip = get_public_ip()
 
     return ip
@@ -227,7 +234,10 @@ def generate_run_chart_data():
     )
 
     # Append both sets of API runs to get full list of runs from beginning through today
-    all_runs = older_api_runs_json["hits_over_time"]["rows"] + api_runs_api_response["hits_over_time"]["rows"]
+    all_runs = (
+        older_api_runs_json["hits_over_time"]["rows"]
+        + api_runs_api_response["hits_over_time"]["rows"]
+    )
 
     runs_arr = []
     run_date_range = []
@@ -237,7 +247,10 @@ def generate_run_chart_data():
         run_date_range.append(run_c[0]["f"])
 
     # Convert elements of run_date_range to datetime objects
-    run_date_range_dt = [datetime.strptime(date_range.split(' - ')[0], '%b %d, %Y') for date_range in run_date_range]
+    run_date_range_dt = [
+        datetime.strptime(date_range.split(" - ")[0], "%b %d, %Y")
+        for date_range in run_date_range
+    ]
 
     # Create a pandas series with run_date_range_dt as the index and runs_arr as the data
     api_runs = pd.Series(data=runs_arr, index=run_date_range_dt)
@@ -262,7 +275,10 @@ def generate_run_chart_data():
         run_date_range.append(run_c[0]["f"])
 
     # Convert elements of run_date_range to datetime objects
-    run_date_range_dt = [datetime.strptime(date_range.split(' - ')[0], '%b %d, %Y') for date_range in run_date_range]
+    run_date_range_dt = [
+        datetime.strptime(date_range.split(" - ")[0], "%b %d, %Y")
+        for date_range in run_date_range
+    ]
 
     # Create a pandas series with run_date_range_dt as the index and runs_arr as the data
     reoptjl_runs = pd.Series(data=runs_arr, index=run_date_range_dt)
