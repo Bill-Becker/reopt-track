@@ -17,10 +17,13 @@ from .serializer import RunMetaSerializer
 
 def dashboard(request):
     # Generate the data for the chart
-    chart_data = generate_chart_data()
+    user_chart_data = generate_user_chart_data()
+    run_chart_data = generate_run_chart_data()
+    print("run_chart_data = ", run_chart_data)
 
     # Pass the chart data to the template
-    context = {"chart_data": json.dumps(chart_data)}
+    context = {"user_chart_data": json.dumps(user_chart_data),
+               "run_chart_data": json.dumps(run_chart_data)}
 
     return render(request, "reopt/dashboard.html", context)
 
@@ -112,8 +115,7 @@ def get_user_location_from_request(request):
     return location_data
 
 
-# TODO this is just for users - create an similar function for run data
-def generate_chart_data():
+def generate_user_chart_data():
     # API users up through FY24, stored in a file
     api_users_file_path = os.path.join(
         settings.BASE_DIR, "reopt", "data", "api_users_thru_FY24.json"
@@ -197,6 +199,101 @@ def generate_chart_data():
             {
                 "label": "REopt.jl Users",
                 "data": reoptjl_users_quarterly.tolist(),
+                "backgroundColor": "rgba(153, 102, 255, 0.2)",
+                "borderColor": "rgba(153, 102, 255, 1)",
+                "borderWidth": 1,
+            },
+        ],
+    }
+
+    return chart_data
+
+
+def generate_run_chart_data():
+    # API runs up through FY24, stored in a file
+    api_runs_file_path = os.path.join(
+        settings.BASE_DIR, "reopt", "data", "api_run_data_thru_FY24.json"
+    )
+    with open(api_runs_file_path, "r") as file:
+        older_api_runs_json = json.load(file)
+
+    # Call api.data.gov API for latest API runs FY25 through today
+    api_runs_api_response = get_api_gov_data(
+        api_or_jl="api",
+        users_or_runs="runs",
+        start_date="2024-10-01",
+        end_date=datetime.today().strftime("%Y-%m-%d"),
+        interval="month",
+    )
+
+    # Append both sets of API runs to get full list of runs from beginning through today
+    all_runs = older_api_runs_json["hits_over_time"]["rows"] + api_runs_api_response["hits_over_time"]["rows"]
+
+    runs_arr = []
+    run_date_range = []
+    for c in range(len(all_runs)):
+        run_c = all_runs[c]["c"]
+        runs_arr.append(sum([run_c[v]["v"] for v in range(1, len(run_c))]))
+        run_date_range.append(run_c[0]["f"])
+
+    # Convert elements of run_date_range to datetime objects
+    run_date_range_dt = [datetime.strptime(date_range.split(' - ')[0], '%b %d, %Y') for date_range in run_date_range]
+
+    # Create a pandas series with run_date_range_dt as the index and runs_arr as the data
+    api_runs = pd.Series(data=runs_arr, index=run_date_range_dt)
+
+    # Group data by quarters and calculate cumulative runs
+    api_runs_quarterly = api_runs.resample("QE").sum().cumsum()
+    print("api_runs_quarterly = ", api_runs_quarterly)
+    # Call api.data.gov API for REopt.jl run data - note we are not storing and loading REopt.jl run data locally
+    reoptjl_runs_api_response = get_api_gov_data(
+        api_or_jl="jl",
+        users_or_runs="runs",
+        start_date="2022-10-01",
+        end_date=datetime.today().strftime("%Y-%m-%d"),
+        interval="month",
+    )
+
+    runs_arr = []
+    run_date_range = []
+    for c in range(len(reoptjl_runs_api_response["hits_over_time"]["rows"])):
+        run_c = reoptjl_runs_api_response["hits_over_time"]["rows"][c]["c"]
+        runs_arr.append(sum([run_c[v]["v"] for v in range(1, len(run_c))]))
+        run_date_range.append(run_c[0]["f"])
+
+    # Convert elements of run_date_range to datetime objects
+    run_date_range_dt = [datetime.strptime(date_range.split(' - ')[0], '%b %d, %Y') for date_range in run_date_range]
+
+    # Create a pandas series with run_date_range_dt as the index and runs_arr as the data
+    reoptjl_runs = pd.Series(data=runs_arr, index=run_date_range_dt)
+
+    # TODO make these NREL's fiscal year quarters instead of calendar year quarters
+
+    # Group data by quarters and calculate cumulative runs
+    reoptjl_runs_quarterly = reoptjl_runs.resample("QE").sum().cumsum()
+
+    # Reindex reoptjl_runs_quarterly to match api_runs_quarterly
+    reoptjl_runs_quarterly = reoptjl_runs_quarterly.reindex(
+        api_runs_quarterly.index, fill_value=0
+    )
+
+    # Prepare data for Chart.js
+    chart_data = {
+        "labels": [
+            f"Q{((date.month-1)//3)+1} {date.year}"
+            for date in api_runs_quarterly.index
+        ],  # Format as 'Q1 2022', 'Q2 2022', etc.
+        "datasets": [
+            {
+                "label": "API Runs",
+                "data": api_runs_quarterly.tolist(),
+                "backgroundColor": "rgba(75, 192, 192, 0.2)",
+                "borderColor": "rgba(75, 192, 192, 1)",
+                "borderWidth": 1,
+            },
+            {
+                "label": "REopt.jl Runs",
+                "data": reoptjl_runs_quarterly.tolist(),
                 "backgroundColor": "rgba(153, 102, 255, 0.2)",
                 "borderColor": "rgba(153, 102, 255, 1)",
                 "borderWidth": 1,

@@ -8,37 +8,78 @@
 
 
 <div class="chart-container" style="width: 100%; height: 50vh; margin: 0 auto;">
-    <canvas id="myChart" width="2400" height="1200"></canvas>
+    <canvas id="userChart" width="2400" height="1200"></canvas>
 </div>
 
 <!-- Use the json_script filter to pass the data -->
-<script id="chart-data" type="application/json">
-    {{ chart_data|safe }}
+<script id="user-chart-data" type="application/json">
+    {{ user_chart_data|safe }}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Retrieve the JSON data
-    var chartDataElement = document.getElementById('chart-data');
-    console.log(chartDataElement.textContent);
-    var chartData = JSON.parse(chartDataElement.textContent);
+    // Retrieve the JSON data for user chart
+    var userChartDataElement = document.getElementById('user-chart-data');
+    var userChartData = JSON.parse(userChartDataElement.textContent);
 
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var myChart = new Chart(ctx, {
+    var userCtx = document.getElementById('userChart').getContext('2d');
+    var userChart = new Chart(userCtx, {
         type: 'bar',
         data: {
-            labels: chartData.labels,
-            datasets: chartData.datasets
+            labels: userChartData.labels,
+            datasets: userChartData.datasets
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
+                x: {
+                    beginAtZero: true,
+                    stacked: true                    
+                },
                 y: {
                     beginAtZero: true,
                     stacked: true
-                },
+                }
+            }
+        }
+    });
+</script>
+
+<div class="dashboard-title">
+    <h1>REopt Runs Dashboard</h1>
+</div>
+
+<div class="chart-container" style="width: 100%; height: 50vh; margin: 0 auto;">
+<canvas id="runChart" width="2400" height="1200"></canvas>
+</div>
+
+<script id="run-chart-data" type="application/json">
+{{ run_chart_data|safe }}
+</script>
+
+<script>
+    // Retrieve the JSON data for run chart
+    var runChartDataElement = document.getElementById('run-chart-data');
+    var runChartData = JSON.parse(runChartDataElement.textContent);
+
+    var runCtx = document.getElementById('runChart').getContext('2d');
+    var runChart = new Chart(runCtx, {
+        type: 'bar',
+        data: {
+            labels: runChartData.labels,
+            datasets: runChartData.datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
                 x: {
+                    beginAtZero: true,
+                    stacked: true
+                },
+                y: {
+                    beginAtZero: true,
                     stacked: true
                 }
             }
