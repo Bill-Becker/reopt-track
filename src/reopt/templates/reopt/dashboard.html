@@ -87,6 +87,47 @@
     });
 </script>
 
+<div class="dashboard-title">
+    <h1>REopt Run Method</h1>
+</div>
+
+<div class="chart-container" style="width: 100%; height: 50vh; margin: 0 auto;">
+    <canvas id="trackChart" width="2400" height="1200"></canvas>
+</div>
+
+<script id="track-chart-data" type="application/json">
+    {{ track_data|safe }}
+</script>
+
+<script>
+    // Retrieve the JSON data for track chart
+    var trackChartDataElement = document.getElementById('track-chart-data');
+    var trackChartData = JSON.parse(trackChartDataElement.textContent);
+
+    var trackCtx = document.getElementById('trackChart').getContext('2d');
+    var trackChart = new Chart(trackCtx, {
+        type: 'bar',
+        data: {
+            labels: trackChartData.labels,
+            datasets: trackChartData.datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    stacked: true
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true
+                }
+            }
+        }
+    });
+</script>
+
 <style>
     .dashboard-title {
         text-align: center;

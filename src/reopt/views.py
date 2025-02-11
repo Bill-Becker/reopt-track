@@ -19,12 +19,13 @@ def dashboard(request):
     # Generate the data for the chart
     user_chart_data = generate_user_chart_data()
     run_chart_data = generate_run_chart_data()
-    print("run_chart_data = ", run_chart_data)
+    track_data = get_run_counts_by_quarter()
 
     # Pass the chart data to the template
     context = {
         "user_chart_data": json.dumps(user_chart_data),
         "run_chart_data": json.dumps(run_chart_data),
+        "track_data": json.dumps(track_data)
     }
 
     return render(request, "reopt/dashboard.html", context)
@@ -80,6 +81,62 @@ def updateRun(request):
         run_meta_serializer.save()
         return Response(run_meta_serializer.data, status=200)
     return Response(run_meta_serializer.errors, status=400)
+
+
+def get_run_counts_by_quarter():
+    # Query the RunMeta model for all entries
+    run_meta_entries = RunMeta.objects.all()
+
+    # Create a DataFrame from the query set
+    data = {
+        "created": [entry.created for entry in run_meta_entries],
+        "direct_reoptjl": [entry.direct_reoptjl for entry in run_meta_entries],
+        "direct_api_run": [entry.direct_api_run for entry in run_meta_entries],
+        "webtool_run": [entry.webtool_run for entry in run_meta_entries],
+    }
+    df = pd.DataFrame(data)
+
+    # Convert the "created" column to datetime
+    df["created"] = pd.to_datetime(df["created"])
+
+    # Group data by calendar year quarter and sum the counts
+    df.set_index("created", inplace=True)
+    quarterly_counts = df.resample("QE").sum()
+
+    # quarterly_counts.to_dict(orient="index")
+
+    # Prepare track_data
+    track_data = {
+        "labels": [
+            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
+            for date in quarterly_counts.index
+        ],  # Format as 'Q1 2022', 'Q2 2022', etc.
+        "datasets": [
+            {
+                "label": "REopt.jl",
+                "data": quarterly_counts["direct_reoptjl"].tolist(),
+                "backgroundColor": "rgba(153, 102, 255, 0.2)",
+                "borderColor": "rgba(153, 102, 255, 1)",
+                "borderWidth": 1,
+            },
+            {
+                "label": "API",
+                "data": quarterly_counts["direct_api_run"].tolist(),
+                "backgroundColor": "rgba(75, 192, 192, 0.2)",
+                "borderColor": "rgba(75, 192, 192, 1)",
+                "borderWidth": 1,
+            },
+            {
+                "label": "Webtool",
+                "data": quarterly_counts["webtool_run"].tolist(),
+                "backgroundColor": "rgba(255, 99, 132, 0.2)",
+                "borderColor": "rgba(255, 99, 132, 1)",
+                "borderWidth": 1,
+            },            
+        ],
+    }
+
+    return track_data
 
 
 def get_user_location(ip_address):
