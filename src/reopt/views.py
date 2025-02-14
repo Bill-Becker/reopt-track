@@ -4,12 +4,14 @@ from datetime import datetime
 
 import pandas as pd
 import requests
+import folium
 from django.conf import settings
 from django.shortcuts import render
+from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import RunMeta
+from .models import RunMeta, RunData
 from .serializer import RunMetaSerializer
 
 # Create your views here.
@@ -17,15 +19,19 @@ from .serializer import RunMetaSerializer
 
 def dashboard(request):
     # Generate the data for the chart
-    user_chart_data = generate_user_chart_data()
-    run_chart_data = generate_run_chart_data()
-    track_data = get_run_counts_by_quarter()
+    user_chart_data = get_user_chart_data_from_api_gov()
+    run_chart_data = get_run_chart_data_from_api_gov()
+    track_data = get_run_counts_from_track_db()
+    user_locations_map_path = get_user_locations_map()
+    run_locations_map_path = get_run_locations_map()
 
     # Pass the chart data to the template
     context = {
         "user_chart_data": json.dumps(user_chart_data),
         "run_chart_data": json.dumps(run_chart_data),
-        "track_data": json.dumps(track_data)
+        "track_data": json.dumps(track_data),
+        "user_locations_map_path": user_locations_map_path,
+        "run_locations_map_path": run_locations_map_path,
     }
 
     return render(request, "reopt/dashboard.html", context)
@@ -83,16 +89,16 @@ def updateRun(request):
     return Response(run_meta_serializer.errors, status=400)
 
 
-def get_run_counts_by_quarter():
+def get_run_counts_from_track_db():
     # Query the RunMeta model for all entries
-    run_meta_entries = RunMeta.objects.all()
+    run_data_entries = RunMeta.objects.all()
 
     # Create a DataFrame from the query set
     data = {
-        "created": [entry.created for entry in run_meta_entries],
-        "direct_reoptjl": [entry.direct_reoptjl for entry in run_meta_entries],
-        "direct_api_run": [entry.direct_api_run for entry in run_meta_entries],
-        "webtool_run": [entry.webtool_run for entry in run_meta_entries],
+        "created": [entry.created for entry in run_data_entries],
+        "direct_reoptjl": [entry.direct_reoptjl for entry in run_data_entries],
+        "direct_api_run": [entry.direct_api_run for entry in run_data_entries],
+        "webtool_run": [entry.webtool_run for entry in run_data_entries],
     }
     df = pd.DataFrame(data)
 
@@ -147,7 +153,7 @@ def get_user_location(ip_address):
 
 
 def get_public_ip():
-    response = requests.get("http://api.ipify.org?format=json")
+    response = requests.get("https://api.ipify.org?format=json", verify=False)
     ip_data = response.json()
     return ip_data["ip"]
 
@@ -179,7 +185,69 @@ def get_user_location_from_request(request):
     return location_data
 
 
-def generate_user_chart_data():
+def get_user_locations_map():
+    # Retrieve all user cities from the RunMeta model
+    run_data_entries = RunMeta.objects.all()
+    user_location = [(entry.user_city, entry.user_region, entry.user_country) for entry in run_data_entries]
+
+    # Create a map centered at a default location
+    user_map = folium.Map(location=[0, 0], zoom_start=2)
+
+    # Add markers for each city
+    for city, state, country in user_location:
+        if city and state and country:
+            location = get_lat_lon_from_city(city, state, country)
+            if location:
+                folium.Marker(location=location, popup=f"{city}, {state}, {country}").add_to(user_map)
+            else:
+                print(f"Location not found for city: {city}, state: {state}, country: {country}")
+
+    # # Save the map to an HTML file in the static directory
+    map_file_path = os.path.join(settings.STATICFILES_DIRS[1], "user_location_map.html")
+    user_map.save(map_file_path)
+
+    # return map_file_path
+    return static("user_location_map.html")
+
+# TODO this takes a while so try built-in django-tasks to put this in the background
+def get_lat_lon_from_city(city, state, country):
+    # Use a geocoding service to get the latitude and longitude of the city
+    url = f"https://nominatim.openstreetmap.org/search?city={city}&state={state}&country={country}&format=json"
+    headers = {
+        "User-Agent": "reopt-track/1.0 (william.becker@nrel.gov)"
+    }
+    response = requests.get(url, headers=headers, verify=False)
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            return [float(data[0]["lat"]), float(data[0]["lon"])]
+    return None
+
+def get_run_locations_map():
+    # Retrieve all user cities from the RunMeta model
+    run_data_entries = RunData.objects.all()
+    user_location = [(entry.latitude, entry.longitude) for entry in run_data_entries]
+
+    # Create a map centered at a default location
+    run_map = folium.Map(location=[0, 0], zoom_start=2)
+
+    # Add markers for each city
+    for lat, lon in user_location:
+        if lat and lon:
+            try:
+                folium.Marker(location=[float(lat),float(lon)], popup=f"{lat}, {lon}").add_to(run_map)
+            except:
+                print(f"did not successfully at lat {lat} and lon {lon} to map")
+
+    # # Save the map to an HTML file in the static directory
+    map_file_path = os.path.join(settings.STATICFILES_DIRS[1], "run_location_map.html")
+    run_map.save(map_file_path)
+
+    # return map_file_path
+    return static("run_location_map.html")
+
+
+def get_user_chart_data_from_api_gov():
     # API users up through FY24, stored in a file
     api_users_file_path = os.path.join(
         settings.BASE_DIR, "reopt", "data", "api_users_thru_FY24.json"
@@ -271,7 +339,7 @@ def generate_user_chart_data():
     return chart_data
 
 
-def generate_run_chart_data():
+def get_run_chart_data_from_api_gov():
     # API runs up through FY24, stored in a file
     api_runs_file_path = os.path.join(
         settings.BASE_DIR, "reopt", "data", "api_run_data_thru_FY24.json"

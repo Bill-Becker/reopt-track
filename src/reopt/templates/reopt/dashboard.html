@@ -128,6 +128,22 @@
     });
 </script>
 
+<div class="dashboard-title">
+    <h1>User Locations</h1>
+</div>
+
+<div>
+    <iframe src="{{ user_locations_map_path }}" width="100%" height="500"></iframe>
+</div>
+
+<div class="dashboard-title">
+    <h1>Analysis Run Locations</h1>
+</div>
+
+<div>
+    <iframe src="{{ run_locations_map_path }}" width="100%" height="500"></iframe>
+</div>
+
 <style>
     .dashboard-title {
         text-align: center;

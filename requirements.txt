@@ -16,3 +16,4 @@ djangorestframework==3.15.2
 requests==2.26.0
 matplotlib==3.10.0
 pandas==2.2.3
+folium==0.19.4
