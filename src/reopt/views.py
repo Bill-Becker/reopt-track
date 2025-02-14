@@ -138,7 +138,7 @@ def get_run_counts_from_track_db():
                 "backgroundColor": "rgba(255, 99, 132, 0.2)",
                 "borderColor": "rgba(255, 99, 132, 1)",
                 "borderWidth": 1,
-            },            
+            },
         ],
     }
 
@@ -188,7 +188,10 @@ def get_user_location_from_request(request):
 def get_user_locations_map():
     # Retrieve all user cities from the RunMeta model
     run_data_entries = RunMeta.objects.all()
-    user_location = [(entry.user_city, entry.user_region, entry.user_country) for entry in run_data_entries]
+    user_location = [
+        (entry.user_city, entry.user_region, entry.user_country)
+        for entry in run_data_entries
+    ]
 
     # Create a map centered at a default location
     user_map = folium.Map(location=[0, 0], zoom_start=2)
@@ -198,24 +201,29 @@ def get_user_locations_map():
         if city and state and country:
             location = get_lat_lon_from_city(city, state, country)
             if location:
-                folium.Marker(location=location, popup=f"{city}, {state}, {country}").add_to(user_map)
+                folium.Marker(
+                    location=location, popup=f"{city}, {state}, {country}"
+                ).add_to(user_map)
             else:
-                print(f"Location not found for city: {city}, state: {state}, country: {country}")
+                print(
+                    f"Location not found for city: {city}, state: {state}, country: {country}"
+                )
 
     # # Save the map to an HTML file in the static directory
-    map_file_path = os.path.join(settings.STATICFILES_DIRS[1], "user_location_map.html")
+    map_file_path = os.path.join(
+        settings.STATICFILES_DIRS[1], "user_location_map.html"
+    )
     user_map.save(map_file_path)
 
     # return map_file_path
     return static("user_location_map.html")
 
+
 # TODO this takes a while so try built-in django-tasks to put this in the background
 def get_lat_lon_from_city(city, state, country):
     # Use a geocoding service to get the latitude and longitude of the city
     url = f"https://nominatim.openstreetmap.org/search?city={city}&state={state}&country={country}&format=json"
-    headers = {
-        "User-Agent": "reopt-track/1.0 (william.becker@nrel.gov)"
-    }
+    headers = {"User-Agent": "reopt-track/1.0 (william.becker@nrel.gov)"}
     response = requests.get(url, headers=headers, verify=False)
     if response.status_code == 200:
         data = response.json()
@@ -223,10 +231,13 @@ def get_lat_lon_from_city(city, state, country):
             return [float(data[0]["lat"]), float(data[0]["lon"])]
     return None
 
+
 def get_run_locations_map():
     # Retrieve all user cities from the RunMeta model
     run_data_entries = RunData.objects.all()
-    user_location = [(entry.latitude, entry.longitude) for entry in run_data_entries]
+    user_location = [
+        (entry.latitude, entry.longitude) for entry in run_data_entries
+    ]
 
     # Create a map centered at a default location
     run_map = folium.Map(location=[0, 0], zoom_start=2)
@@ -235,12 +246,18 @@ def get_run_locations_map():
     for lat, lon in user_location:
         if lat and lon:
             try:
-                folium.Marker(location=[float(lat),float(lon)], popup=f"{lat}, {lon}").add_to(run_map)
+                folium.Marker(
+                    location=[float(lat), float(lon)], popup=f"{lat}, {lon}"
+                ).add_to(run_map)
             except:
-                print(f"did not successfully at lat {lat} and lon {lon} to map")
+                print(
+                    f"did not successfully at lat {lat} and lon {lon} to map"
+                )
 
     # # Save the map to an HTML file in the static directory
-    map_file_path = os.path.join(settings.STATICFILES_DIRS[1], "run_location_map.html")
+    map_file_path = os.path.join(
+        settings.STATICFILES_DIRS[1], "run_location_map.html"
+    )
     run_map.save(map_file_path)
 
     # return map_file_path
