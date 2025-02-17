@@ -54,6 +54,7 @@ def dashboard(request):
 
     return render(request, "reopt/dashboard.html", context)
 
+
 def update_chart_data(request):
     user_chart_data = get_user_chart_data_from_api_gov()
     run_chart_data = get_run_chart_data_from_api_gov()
@@ -72,6 +73,7 @@ def update_chart_data(request):
         json.dump(track_data, f)
 
     return JsonResponse({'status': 'success'})
+
 
 @api_view(["GET"])
 def getData(request):
