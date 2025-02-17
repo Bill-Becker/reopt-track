@@ -116,7 +116,7 @@ def get_run_counts_from_track_db():
     # Prepare track_data
     track_data = {
         "labels": [
-            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
+            f"Q{((date.month - 10) // 3) % 4 + 1} {date.year + 1 if date.month >= 10 else date.year}"
             for date in quarterly_counts.index
         ],  # Format as 'Q1 2022', 'Q2 2022', etc.
         "datasets": [
@@ -205,7 +205,7 @@ def get_user_locations_map():
 
     # Add markers for each city
     for city, state, country, lat, lon in user_location:
-        if (lat != None) and (lon != None):
+        if (lat is not None) and (lon is not None):
             folium.Marker(
                 location=[float(lat), float(lon)],
                 popup=f"{city}, {state}, {country}",
@@ -316,7 +316,7 @@ def get_user_chart_data_from_api_gov():
     # Prepare data for Chart.js
     chart_data = {
         "labels": [
-            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
+            f"Q{((date.month - 10) // 3) % 4 + 1} {date.year + 1 if date.month >= 10 else date.year}"
             for date in api_users_quarterly.index
         ],  # Format as 'Q1 2022', 'Q2 2022', etc.
         "datasets": [
@@ -418,7 +418,7 @@ def get_run_chart_data_from_api_gov():
     # Prepare data for Chart.js
     chart_data = {
         "labels": [
-            f"Q{((date.month-10)//3)%4+1} {date.year+1 if date.month >= 10 else date.year}"
+            f"Q{((date.month - 10) // 3) % 4 + 1} {date.year + 1 if date.month >= 10 else date.year}"
             for date in api_runs_quarterly.index
         ],  # Format as 'Q1 2022', 'Q2 2022', etc.
         "datasets": [
