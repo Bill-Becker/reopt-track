@@ -6,7 +6,8 @@ import folium
 import pandas as pd
 import requests
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -19,14 +20,30 @@ from .serializer import RunMetaSerializer
 
 
 def dashboard(request):
-    # Generate the data for the chart
-    user_chart_data = get_user_chart_data_from_api_gov()
-    run_chart_data = get_run_chart_data_from_api_gov()
-    track_data = get_run_counts_from_track_db()
+    data_dir = os.path.join(settings.BASE_DIR, 'reopt', 'data')
+    user_chart_data_path = os.path.join(data_dir, 'user_chart_data.json')
+    run_chart_data_path = os.path.join(data_dir, 'run_chart_data.json')
+    track_data_path = os.path.join(data_dir, 'track_data.json')
+
+    # Check if any of the data files do not exist
+    if not (os.path.exists(user_chart_data_path) and os.path.exists(run_chart_data_path) and os.path.exists(track_data_path)):
+        # Call the update_chart_data view to generate the data files
+        update_chart_data(request)
+        # Redirect back to the dashboard
+        return redirect('reopt_dashboard')
+
+    with open(os.path.join(data_dir, 'user_chart_data.json'), 'r') as f:
+        user_chart_data = json.load(f)
+
+    with open(os.path.join(data_dir, 'run_chart_data.json'), 'r') as f:
+        run_chart_data = json.load(f)
+
+    with open(os.path.join(data_dir, 'track_data.json'), 'r') as f:
+        track_data = json.load(f)
+
     user_locations_map_path = get_user_locations_map()
     run_locations_map_path = get_run_locations_map()
 
-    # Pass the chart data to the template
     context = {
         "user_chart_data": json.dumps(user_chart_data),
         "run_chart_data": json.dumps(run_chart_data),
@@ -37,6 +54,24 @@ def dashboard(request):
 
     return render(request, "reopt/dashboard.html", context)
 
+def update_chart_data(request):
+    user_chart_data = get_user_chart_data_from_api_gov()
+    run_chart_data = get_run_chart_data_from_api_gov()
+    track_data = get_run_counts_from_track_db()
+
+    data_dir = os.path.join(settings.BASE_DIR, 'reopt', 'data')
+    os.makedirs(data_dir, exist_ok=True)
+
+    with open(os.path.join(data_dir, 'user_chart_data.json'), 'w') as f:
+        json.dump(user_chart_data, f)
+
+    with open(os.path.join(data_dir, 'run_chart_data.json'), 'w') as f:
+        json.dump(run_chart_data, f)
+
+    with open(os.path.join(data_dir, 'track_data.json'), 'w') as f:
+        json.dump(track_data, f)
+
+    return JsonResponse({'status': 'success'})
 
 @api_view(["GET"])
 def getData(request):
