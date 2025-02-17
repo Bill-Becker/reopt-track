@@ -133,7 +133,8 @@
 </div>
 
 <div>
-    <iframe src="{{ user_locations_map_path }}" width="100%" height="500"></iframe>
+    <iframe id="userLocationsMap" src="{{ user_locations_map_path }}" width="100%" height="500"></iframe>
+    <button onclick="resetZoom('userLocationsMap')">Reset Zoom</button>
 </div>
 
 <div class="dashboard-title">
@@ -141,7 +142,8 @@
 </div>
 
 <div>
-    <iframe src="{{ run_locations_map_path }}" width="100%" height="500"></iframe>
+    <iframe id="runLocationsMap" src="{{ run_locations_map_path }}" width="100%" height="500"></iframe>
+    <button onclick="resetZoom('runLocationsMap')">Reset Zoom</button>
 </div>
 
 <style>
@@ -163,7 +165,31 @@
     .chart-container canvas {
         max-width: 100%;
         height: auto;
-    }    
+    }
+
+    button {
+        display: block;
+        margin: 10px auto;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
 </style>
+
+<script>
+    function resetZoom(iframeId) {
+        var iframe = document.getElementById(iframeId);
+        var iframeWindow = iframe.contentWindow;
+        iframeWindow.location.reload();
+    }
+</script>
 
 {% endblock %}

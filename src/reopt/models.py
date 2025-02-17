@@ -7,8 +7,6 @@ class RunData(models.Model):
     name = models.CharField(default="", max_length=200, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    # TODO create a map for the analysis locations
-    # TODO add geolocator to translate lat/long to city/country of analysis here
     run_country = models.CharField(max_length=200, null=True, blank=True)
     run_city = models.CharField(max_length=200, null=True, blank=True)
 
@@ -23,7 +21,7 @@ class RunMeta(models.Model):
         blank=True,
     )
     webtool_run = models.BooleanField(default=False, null=True, blank=True)
-    # TODO (maybe) make these uuid fields UUIDFields for Django's built-in validation
+
     webtool_user_uuid = models.TextField(default="", blank=True)
     webtool_portfolio_uuid = models.TextField(default="", blank=True)
     direct_api_run = models.BooleanField(default=False, null=True, blank=True)
@@ -42,6 +40,8 @@ class RunMeta(models.Model):
     user_country = models.CharField(max_length=200, null=True, blank=True)
     user_region = models.CharField(max_length=200, null=True, blank=True)
     user_city = models.CharField(max_length=200, null=True, blank=True)
+    user_latitude = models.FloatField(null=True, blank=True)
+    user_longitude = models.FloatField(null=True, blank=True)
 
     def clean(self, *args, **kwargs):
         if not self.webtool_run and not self.direct_api_run:

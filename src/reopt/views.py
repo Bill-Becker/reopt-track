@@ -62,6 +62,8 @@ def postRun(request):
     request.data["user_country"] = user_data.get("country")
     request.data["user_region"] = user_data.get("regionName")
     request.data["user_city"] = user_data.get("city")
+    request.data["user_latitude"] = user_data.get("lat")
+    request.data["user_longitude"] = user_data.get("lon")
     run_meta_serializer = RunMetaSerializer(data=request.data)
     if run_meta_serializer.is_valid():
         run_meta_serializer.save()
@@ -91,14 +93,14 @@ def updateRun(request):
 
 def get_run_counts_from_track_db():
     # Query the RunMeta model for all entries
-    run_data_entries = RunMeta.objects.all()
+    run_meta_entries = RunMeta.objects.all()
 
     # Create a DataFrame from the query set
     data = {
-        "created": [entry.created for entry in run_data_entries],
-        "direct_reoptjl": [entry.direct_reoptjl for entry in run_data_entries],
-        "direct_api_run": [entry.direct_api_run for entry in run_data_entries],
-        "webtool_run": [entry.webtool_run for entry in run_data_entries],
+        "created": [entry.created for entry in run_meta_entries],
+        "direct_reoptjl": [entry.direct_reoptjl for entry in run_meta_entries],
+        "direct_api_run": [entry.direct_api_run for entry in run_meta_entries],
+        "webtool_run": [entry.webtool_run for entry in run_meta_entries],
     }
     df = pd.DataFrame(data)
 
@@ -181,33 +183,33 @@ def get_user_ip(request):
 def get_user_location_from_request(request):
     ip = get_user_ip(request)
     location_data = get_user_location(ip)
-    print(f"User location: {location_data.get('country')}")
     return location_data
 
 
 def get_user_locations_map():
     # Retrieve all user cities from the RunMeta model
-    run_data_entries = RunMeta.objects.all()
+    run_meta_entries = RunMeta.objects.all()
     user_location = [
-        (entry.user_city, entry.user_region, entry.user_country)
-        for entry in run_data_entries
+        (
+            entry.user_city,
+            entry.user_region,
+            entry.user_country,
+            entry.user_latitude,
+            entry.user_longitude,
+        )
+        for entry in run_meta_entries
     ]
 
     # Create a map centered at a default location
     user_map = folium.Map(location=[0, 0], zoom_start=2)
 
     # Add markers for each city
-    for city, state, country in user_location:
-        if city and state and country:
-            location = get_lat_lon_from_city(city, state, country)
-            if location:
-                folium.Marker(
-                    location=location, popup=f"{city}, {state}, {country}"
-                ).add_to(user_map)
-            else:
-                print(
-                    f"Location not found for city: {city}, state: {state}, country: {country}"
-                )
+    for city, state, country, lat, lon in user_location:
+        if (lat != None) and (lon != None):
+            folium.Marker(
+                location=[float(lat), float(lon)],
+                popup=f"{city}, {state}, {country}",
+            ).add_to(user_map)
 
     # # Save the map to an HTML file in the static directory
     map_file_path = os.path.join(
@@ -217,19 +219,6 @@ def get_user_locations_map():
 
     # return map_file_path
     return static("user_location_map.html")
-
-
-# TODO this takes a while so try built-in django-tasks to put this in the background
-def get_lat_lon_from_city(city, state, country):
-    # Use a geocoding service to get the latitude and longitude of the city
-    url = f"https://nominatim.openstreetmap.org/search?city={city}&state={state}&country={country}&format=json"
-    headers = {"User-Agent": "reopt-track/1.0 (william.becker@nrel.gov)"}
-    response = requests.get(url, headers=headers, verify=False)
-    if response.status_code == 200:
-        data = response.json()
-        if data:
-            return [float(data[0]["lat"]), float(data[0]["lon"])]
-    return None
 
 
 def get_run_locations_map():
@@ -245,14 +234,9 @@ def get_run_locations_map():
     # Add markers for each city
     for lat, lon in user_location:
         if lat and lon:
-            try:
-                folium.Marker(
-                    location=[float(lat), float(lon)], popup=f"{lat}, {lon}"
-                ).add_to(run_map)
-            except:
-                print(
-                    f"did not successfully at lat {lat} and lon {lon} to map"
-                )
+            folium.Marker(
+                location=[float(lat), float(lon)], popup=f"{lat}, {lon}"
+            ).add_to(run_map)
 
     # # Save the map to an HTML file in the static directory
     map_file_path = os.path.join(
